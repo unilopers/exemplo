@@ -167,6 +167,112 @@ Dicas para relacionamentos:
 - **Orphan Removal**: Para @OneToMany, remove filhos órfãos automaticamente.
 - Sempre teste relacionamentos no H2 Console para verificar tabelas de junção e chaves estrangeiras.
 
+### Criando um Controller REST
+
+Para criar um novo Controller REST neste projeto, siga estes passos para implementar endpoints CRUD básicos:
+
+1. **Localização**: Crie a classe em `src/main/java/com/example/exemplo/Controller/`. Exemplo: `MeuController.java`.
+
+2. **Estrutura básica**:
+   - Use `@RestController` para marcar a classe como controller REST (combina `@Controller` e `@ResponseBody`).
+   - Use `@RequestMapping("/recurso")` para definir o caminho base (ex.: `/usuarios`).
+   - Injete o Repository correspondente com `@Autowired`.
+
+3. **Mapeamento de rotas**:
+   - `@GetMapping` para leitura (listar ou buscar).
+   - `@PostMapping` para criação.
+   - `@PutMapping("/{id}")` para atualização.
+   - `@DeleteMapping("/{id}")` para exclusão.
+   - Use `@PathVariable` para capturar IDs na URL.
+   - Use `@RequestBody` para receber dados no corpo da requisição.
+
+4. **Operações básicas**:
+   - **Listar todos**: Retorne `List<Entidade>` ou `ResponseEntity<List<Entidade>>`.
+   - **Buscar por ID**: Use `repository.findById(id)` e retorne `ResponseEntity.ok()` ou `notFound()`.
+   - **Criar**: Salve com `repository.save(entidade)` e retorne `ResponseEntity.created(location).body(saved)`.
+   - **Atualizar**: Busque, atualize campos, salve e retorne `ResponseEntity.ok(saved)`.
+   - **Deletar**: Verifique existência, delete e retorne `ResponseEntity.noContent()`.
+
+Exemplo completo (`ProdutoController.java`, assumindo um modelo `Produto` e `ProdutoRepository`):
+
+```java
+package com.example.exemplo.Controller;
+
+import com.example.exemplo.Model.Produto;
+import com.example.exemplo.Model.Repository.ProdutoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/produtos")
+public class ProdutoController {
+    @Autowired
+    private ProdutoRepository produtoRepository;
+
+    @GetMapping
+    public List<Produto> list() {
+        return produtoRepository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Produto> read(@PathVariable Long id) {
+        Optional<Produto> produto = produtoRepository.findById(id);
+        return produto.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public ResponseEntity<Produto> create(@RequestBody Produto produto) {
+        Produto saved = produtoRepository.save(produto);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(saved.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(saved);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Produto> update(@PathVariable Long id, @RequestBody Produto details) {
+        Optional<Produto> opt = produtoRepository.findById(id);
+        if (opt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Produto produto = opt.get();
+        // Atualize campos conforme necessário
+        if (details.getNome() != null) {
+            produto.setNome(details.getNome());
+        }
+        if (details.getPreco() != null) {
+            produto.setPreco(details.getPreco());
+        }
+        Produto saved = produtoRepository.save(produto);
+        return ResponseEntity.ok(saved);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        Optional<Produto> opt = produtoRepository.findById(id);
+        if (opt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        produtoRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+```
+
+Dicas:
+- Use `ResponseEntity` para controle fino de status HTTP (ex.: 404 para não encontrado, 201 para criado).
+- Adicione validações (ex.: `@Valid` no `@RequestBody`) e tratamento de erros com `@ExceptionHandler`.
+- Para relacionamentos, valide referências (ex.: verificar se ID de entidade relacionada existe).
+- Teste endpoints com ferramentas como Postman ou curl após implementar.
+
 4. **Timestamps**:
    - Para campos de criação e atualização automática, use:
      - `@CreationTimestamp` para `createdAt`.
