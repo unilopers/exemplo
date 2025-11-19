@@ -338,3 +338,19 @@ Dicas:
 - Sempre teste a entidade executando a aplicação e verificando se as tabelas são criadas corretamente no H2 Console.
 - Use validações adicionais com Bean Validation (ex.: `@NotBlank`, `@Email`) se necessário.
 - Para relacionamentos complexos, consulte a documentação JPA/Hibernate.
+
+### Referências e Documentação
+
+Aqui estão links para as documentações oficiais das tecnologias e técnicas utilizadas neste projeto:
+
+- **Spring Boot**: Framework para criação de aplicações Java standalone. [Documentação oficial](https://spring.io/projects/spring-boot).
+- **Spring Data JPA**: Abstração para acesso a dados com JPA. [Documentação oficial](https://spring.io/projects/spring-data-jpa).
+- **Spring Web (REST Controllers)**: Para construção de APIs REST. [Documentação oficial](https://spring.io/projects/spring-framework#web).
+- **Hibernate ORM**: Implementação JPA usada pelo Spring Data. [Documentação oficial](https://hibernate.org/orm/documentation/).
+- **H2 Database**: Banco de dados em memória para desenvolvimento. [Documentação oficial](https://h2database.com/html/main.html).
+- **Maven**: Ferramenta de build e gerenciamento de dependências. [Documentação oficial](https://maven.apache.org/guides/index.html).
+- **Java Persistence API (JPA)**: Especificação para mapeamento objeto-relacional. [Documentação oficial](https://jakarta.ee/specifications/persistence/).
+
+Para tutoriais e guias adicionais:
+- [Spring Boot Reference Guide](https://docs.spring.io/spring-boot/docs/current/reference/html/).
+- [JPA Specification](https://jakarta.ee/specifications/persistence/3.0/jakarta-persistence-spec-3.0.html).
