@@ -113,6 +113,60 @@ Para criar um novo modelo (entidade JPA) neste projeto, siga estes passos e conv
    - Use `@JoinColumn` para especificar a coluna de junção.
    - Para ManyToMany bidirecional, use `mappedBy` no lado inverso.
 
+#### Relacionamentos entre modelos
+
+JPA suporta vários tipos de relacionamentos entre entidades. Aqui estão os principais, com exemplos baseados nos modelos existentes (`Usuario`, `Cargo`, `Post`):
+
+1. **Many-to-One (Muitos-para-Um)**:
+   - Um lado "muitos" aponta para um lado "um".
+   - Exemplo: Muitos `Post`s pertencem a um `Usuario`.
+   - Anotações: `@ManyToOne` no lado "muitos", `@JoinColumn` para a chave estrangeira.
+   - Exemplo em `Post.java`:
+     ```java
+     @ManyToOne(fetch = FetchType.LAZY)
+     @JoinColumn(name = "usuario_id")
+     private Usuario author;
+     ```
+   - No lado "um" (`Usuario`), não precisa de anotação específica se for unidirecional.
+
+2. **One-to-Many (Um-para-Muitos)**:
+   - O inverso de Many-to-One: um lado "um" tem uma coleção do lado "muitos".
+   - Exemplo: Um `Usuario` tem muitos `Post`s.
+   - Anotações: `@OneToMany` com `mappedBy` no lado "um".
+   - Exemplo em `Usuario.java` (se adicionado):
+     ```java
+     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+     private List<Post> posts = new ArrayList<>();
+     ```
+   - `mappedBy` refere-se ao campo no lado oposto (`author` em `Post`).
+
+3. **Many-to-Many (Muitos-para-Muitos)**:
+   - Ambos os lados podem ter coleções do outro.
+   - Exemplo: `Usuario`s têm muitos `Cargo`s, e `Cargo`s têm muitos `Usuario`s.
+   - Anotações: `@ManyToMany`, `@JoinTable` no lado proprietário (sem `mappedBy`).
+   - Exemplo em `Usuario.java`:
+     ```java
+     @ManyToMany
+     @JoinTable(
+         name = "usuario_cargos",
+         joinColumns = @JoinColumn(name = "usuario_id"),
+         inverseJoinColumns = @JoinColumn(name = "cargo_id")
+     )
+     private Set<Cargo> cargos = new HashSet<>();
+     ```
+   - No lado inverso (`Cargo.java`):
+     ```java
+     @ManyToMany(mappedBy = "cargos")
+     private Set<Usuario> usuarios = new HashSet<>();
+     ```
+
+Dicas para relacionamentos:
+- **Bidirecional vs Unidirecional**: Bidirecional permite navegação de ambos os lados (use `mappedBy`). Unidirecional é mais simples, mas limita acesso.
+- **Fetch**: Use `FetchType.LAZY` para carregamento preguiçoso (padrão para @ManyToOne e @ManyToMany); `EAGER` carrega imediatamente.
+- **Cascade**: Define operações em cascata (ex.: `CascadeType.ALL` para propagar saves/deletes).
+- **Orphan Removal**: Para @OneToMany, remove filhos órfãos automaticamente.
+- Sempre teste relacionamentos no H2 Console para verificar tabelas de junção e chaves estrangeiras.
+
 4. **Timestamps**:
    - Para campos de criação e atualização automática, use:
      - `@CreationTimestamp` para `createdAt`.
