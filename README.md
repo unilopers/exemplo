@@ -91,3 +91,90 @@ Como acessar o H2 Console
 Observações e boas práticas
 - `spring.jpa.hibernate.ddl-auto=update` pode ser conveniente para desenvolvimento, mas pode causar mudanças inesperadas no schema em ambientes maiores; evite em produção.
 - Prefira usar scripts SQL e/ou ferramentas de migração (Flyway/Liquibase) para garantir controle total do schema em produção.
+
+### Criando um modelo
+
+Para criar um novo modelo (entidade JPA) neste projeto, siga estes passos e convenções:
+
+1. **Localização**: Crie a classe em `src/main/java/com/example/exemplo/Model/`. Exemplo: `MeuModelo.java`.
+
+2. **Estrutura básica**:
+   - Use `@Entity` para marcar a classe como entidade JPA.
+   - Use `@Table(name = "nome_da_tabela")` para definir o nome da tabela no banco (opcional, mas recomendado).
+   - Defina um campo `id` como chave primária:
+     - `@Id`
+     - `@GeneratedValue(strategy = GenerationType.IDENTITY)` para auto-incremento.
+   - Campos simples: use tipos primitivos ou wrappers (ex.: `String`, `Long`, `LocalDateTime`).
+   - Use `@Column` para customizar colunas (ex.: `nullable = false`, `unique = true`, `columnDefinition`).
+
+3. **Relacionamentos**:
+   - `@ManyToOne`: para relacionamentos muitos-para-um (ex.: um Post pertence a um Usuario).
+   - `@ManyToMany`: para relacionamentos muitos-para-muitos (ex.: Usuario tem muitos Cargos).
+   - Use `@JoinColumn` para especificar a coluna de junção.
+   - Para ManyToMany bidirecional, use `mappedBy` no lado inverso.
+
+4. **Timestamps**:
+   - Para campos de criação e atualização automática, use:
+     - `@CreationTimestamp` para `createdAt`.
+     - `@UpdateTimestamp` para `updatedAt`.
+   - Importe de `org.hibernate.annotations`.
+
+5. **Construtores e métodos**:
+   - Crie um construtor vazio (obrigatório para JPA).
+   - Crie construtores sobrecarregados para facilitar criação.
+   - Gere getters e setters para todos os campos (use IDE ou Lombok para automatizar).
+
+Exemplo de modelo simples (`Produto.java`):
+
+```java
+package com.example.exemplo.Model;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+@Entity
+@Table(name = "produtos")
+public class Produto {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "nome", nullable = false)
+    private String nome;
+
+    @Column(name = "preco", nullable = false)
+    private Double preco;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;  // Assumindo uma entidade Categoria
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    public Produto() {}
+
+    public Produto(String nome, Double preco, Categoria categoria) {
+        this.nome = nome;
+        this.preco = preco;
+        this.categoria = categoria;
+    }
+
+    // Getters e setters...
+}
+```
+
+Após criar o modelo, crie uma interface Repository correspondente em `src/main/java/com/example/exemplo/Model/Repository/` (ex.: `ProdutoRepository extends JpaRepository<Produto, Long>`), e opcionalmente um Controller em `src/main/java/com/example/exemplo/Controller/` seguindo o padrão dos existentes.
+
+Dicas:
+- Sempre teste a entidade executando a aplicação e verificando se as tabelas são criadas corretamente no H2 Console.
+- Use validações adicionais com Bean Validation (ex.: `@NotBlank`, `@Email`) se necessário.
+- Para relacionamentos complexos, consulte a documentação JPA/Hibernate.
