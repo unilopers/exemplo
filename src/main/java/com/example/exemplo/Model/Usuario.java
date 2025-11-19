@@ -2,6 +2,8 @@ package com.example.exemplo.Model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -31,6 +33,14 @@ public class Usuario {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @ManyToMany
+    @JoinTable(
+        name = "usuario_cargos",
+        joinColumns = @JoinColumn(name = "usuario_id"),
+        inverseJoinColumns = @JoinColumn(name = "cargo_id")
+    )
+    private Set<Cargo> cargos = new HashSet<>();
+
     public Usuario() {
     }
 
@@ -47,6 +57,14 @@ public class Usuario {
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
+    }
+
+    public Set<Cargo> getCargos() {
+        return cargos;
+    }
+
+    public void setCargos(Set<Cargo> cargos) {
+        this.cargos = cargos;
     }
 
     public Long getId() {
